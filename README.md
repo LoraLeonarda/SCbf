@@ -3,6 +3,7 @@ This is the implementation of a compiler that converts a custom language into bf
 
 # Commands
 
+```python
 import X        imports another code in the same folder and appends it at the end
 var X           declare a variable
 vec X <size>    declare a vector
@@ -40,3 +41,4 @@ get X           get value of vector X to operate at base, uses current expressio
 
 macro X         create a macro, can be used like a function
 endmacro        close a macro
+```
