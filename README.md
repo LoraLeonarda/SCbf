@@ -1,8 +1,21 @@
 # SCbf: Static Convert brain f*ck
 This is the implementation of a compiler that converts a custom language into bf, allowing the development of complex bf codes without the trouble
 
-# Commands
+# Usage
+All the code is contained within `scbf.cpp`, and can be compiled like:
+```bash
+g++ scbf.cpp -o scbf
+```
+To compile and run a `.sbf` file, use the compiler like this:
+```bash
+./scbf <filename>
+```
+If you only want to convert to bf withour running, then add anything as another argument
+```bash
+./scbf <filename> 1
+```
 
+# Commands
 ```python
 import X        imports another code in the same folder and appends it at the end
 var X           declare a variable
@@ -20,7 +33,6 @@ _               prefix to print a string, ex: _hello
 ..              print the current character as character, ex: 'A' .. (or 65)
 &               print a space chacater, ex: _hello & _world!
 endl            print a end line character, ex: _hello & _world! endl
-elc
 
 get_number      read a decimal number from terminal up to 255
 get_char        read a char from the terminal
