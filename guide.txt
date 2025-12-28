@@ -16,7 +16,6 @@ _               prefix to print a string, ex: _hello
 ..              print the current character as character, ex: 'A' .. (or 65)
 &               print a space chacater, ex: _hello & _world!
 endl            print a end line character, ex: _hello & _world! endl
-elc
 
 get_number      read a decimal number from terminal up to 255
 get_char        read a char from the terminal
