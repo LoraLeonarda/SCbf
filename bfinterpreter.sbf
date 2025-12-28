@@ -1,0 +1,130 @@
+main
+
+macro main
+
+	#variaveis
+	var cp
+	var mp
+	var tk
+	var code_size
+	var tmp
+	vec mem 32
+	vec code 128
+	
+	#ler_codigo_do_terminal
+	t{
+		get_char >> tk
+		tk >> code
+		cp set code
+		
+		cp + 1 >> cp
+		code_size + 1 >> code_size
+		
+	tk - 10 }
+
+	#RUN_MY_GIRL
+	0 >> cp
+	t{
+		#pegar_token
+		cp get code
+		code >> tk
+		
+		#processar_token
+		tk == '+'
+		{
+			mp get mem
+			mem + 1 >> mem
+			mp set mem
+		f}
+		
+		tk == '-'
+		{
+			mp get mem
+			mem - 1 >> mem
+			mp set mem
+		f}
+		
+		tk == '>'
+		{
+			mp + 1 >> mp
+		f}
+		
+		tk == '<'
+		{
+			mp - 1 >> mp
+		f}
+		
+		tk == ','
+		{
+			get_char >> mem
+			mp set mem
+		f}
+		
+		tk == '.'
+		{
+			mp get mem
+			mem ..
+		f}
+		
+		#tokens_de_loop
+		tk == '['
+		{
+			mp get mem
+			mem >> tk
+			
+			#se_for_igual_a_zero
+			tk == 0
+			{
+				1 >> tmp
+				
+				t{
+					cp + 1 >> cp
+					cp get code
+					code >> tk
+					
+					#balanceamento_de_chaves
+					tk == '['
+					{
+						tmp + 1 >> tmp
+					f}
+					tk == ']'
+					{
+						tmp - 1 >> tmp
+					f}
+				tmp }
+			f}
+			0 >> tk
+		f}
+		
+		
+		tk == ']'
+		{
+			1 >> tmp
+			
+			t{
+				cp - 1 >> cp
+				cp get code
+				code >> tk
+				
+				#balanceamento_de_chaves
+				tk == ']'
+				{
+					tmp + 1 >> tmp
+				f}
+				tk == '['
+				{
+					tmp - 1 >> tmp
+				f}
+			tmp }
+			cp - 1 >> cp
+			0 >> tk
+		f}
+	
+		#token_processado
+		cp + 1 >> cp
+		cp get code
+		code >> tk
+		
+	tk - 10 }
+
+endmacro
