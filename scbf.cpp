@@ -95,6 +95,7 @@ void custwo::Compile()
 		{
 			pc += 1;
 			token = code[pc];
+			vars.push_back(token);
 			pc += 1;
 			int vecsize = stoi(code[pc]);
 			
@@ -186,7 +187,7 @@ void custwo::Compile()
 		}
 		
 		// set ops
-		else if(token == "+" || token == "-" || token == "*" || token == "/" || token == ">>" || token == "!=" || token == "==" || token == "<" || token == ">" || token == "%")
+		else if(token == "+" || token == "-" || token == "*" || token == "/" || token == ">>" || token == "!=" || token == "==" || token == "<" || token == ">" || token == "%" || token == "lda")
 		{
 			optype = token;
 		}
@@ -201,8 +202,26 @@ void custwo::Compile()
 			}
 		}
 		
+		// se bateu em uma struct solta, pula
+		else if(token == "struct")
+		{
+			while(token != "endstruct")
+			{
+				pc += 1;
+				token = code[pc];
+			}
+		}
+		
 		// comentarios (ignorar)
 		else if(token.at(0) == '#'){}
+		
+		// hardcode
+		else if(token == "hardcode")
+		{
+			pc += 1;
+			token = code[pc];
+			bfcode += token;
+		}
 		
 		// get
 		else if(token == "get")
@@ -290,6 +309,19 @@ void custwo::Compile()
 			}
 			varindex = Var(varindex);
 			
+			bool ehstruct = false;
+			int structindex = 0;
+
+			for(int i=1 ; i<code.size() ; i++)
+			{
+				if(token == code[i] && code[i-1] == "struct") 
+				{
+					ehstruct = true;
+					structindex = i;
+					break;
+				}
+			}
+			
 			
 			// caso 1: eh numero
 			if(EhNumero(token))
@@ -337,6 +369,12 @@ void custwo::Compile()
 					bfcode += ">[-]";
 					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
 					bfcode += "<[>->+<[>]>[<+>-]<<[<]>-]>[-]>[-<<+>>]<<";
+				}
+				if(optype == "lda")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
+					bfcode += "<";
 				}
 				if(optype == "load"){bfcode += "[-]"; for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}}
 				optype = "load";
@@ -389,6 +427,12 @@ void custwo::Compile()
 					bfcode += ">[-]";
 					for(int i=0 ; i<val ; i++){bfcode += "+";}
 					bfcode += "<[>->+<[>]>[<+>-]<<[<]>-]>[-]>[-<<+>>]<<";
+				}
+				if(optype == "lda")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<val ; i++){bfcode += "+";}
+					bfcode += "<";
 				}
 				if(optype == "load"){bfcode += "[-]"; for(int i=0 ; i<val ; i++){bfcode += "+";}}
 				optype = "load";
@@ -527,10 +571,41 @@ void custwo::Compile()
 					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
 					bfcode += "<[>->+<[>]>[<+>-]<<[<]>-]>[-]>[-<<+>>]<<";
 				}
+				if(optype == "lda")
+				{
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += dupe;
+					bfcode += "[-";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "+";
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += "]";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "<";
+				}
 				optype = "load";
 			}
 			
-			// caso 3: eh macro
+			// caso 3: eh struct
+			else if(ehstruct)
+			{
+				pc += 1;
+				token = code[pc];
+				vars.push_back(token);
+				
+				structindex += 1;
+				string decl = code[structindex];
+				while(decl != "endstruct")
+				{
+					string varname = token + "." + decl;
+					vars.push_back(varname);
+					
+					structindex += 1;
+					decl = code[structindex];
+				}
+			}
+			
+			// caso 4: eh macro
 			else
 			{
 				//achar macro
