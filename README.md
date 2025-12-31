@@ -17,40 +17,48 @@ If you only want to convert to bf without running, then add anything as another 
 
 # Commands
 ```python
-import X        imports another code in the same folder and appends it at the end
-var X           declare a variable
-vec X <size>    declare a vector
-{               opens a loop, equivalent of bfs [
-t{              opens a loop, with a 1 to always enter
-}               closes a loop, equivalent of bfs ]
-f}              closes and exits with value 0
-true            defines the current number to 1
-false           defines the current number to 0
-flip            flips curent true or false
+import X         imports another code in the same folder and appends it at the end
+var X            declare a variable
+vec X <size>     declare a vector
+<stc> X          declares a variable X of the struct <stc> defined anywhere in the code
+{                opens a loop, equivalent of bfs [
+t{               opens a loop, with a 1 to always enter
+}                closes a loop, equivalent of bfs ]
+f}               closes and exits with value 0
+true             defines the current number to 1
+false            defines the current number to 0
+flip             flips curent true or false
 
-_               prefix to print a string, ex: _hello
-.               print the current expression as number, ex: 32 .
-..              print the current character as character, ex: 'A' .. (or 65)
-&               print a space chacater, ex: _hello & _world!
-endl            print a end line character, ex: _hello & _world! endl
+_                prefix to print a string, ex: _hello
+.                print the current expression as number, ex: 32 .
+..               print the current character as character, ex: 'A' .. (or 65)
+&                print a space chacater, ex: _hello & _world!
+endl             print a end line character, ex: _hello & _world! endl
 
-get_number      read a decimal number from terminal up to 255
-get_char        read a char from the terminal
+get_number       read a decimal number from terminal up to 255
+get_char         read a char from the terminal
 
-+ X             adds a number or variable to current expression
-- X             subtracts a number or variable to current expression
-* X             multiply a number or variable to current expression
-/ X             divide a number or variable to current expression
-% X             calculate modulo of current expression by number
->> X            send the value of the current expression to a variable
-== X            compare if equal X
-!= X            compare if diferent then X
-< X             compare if less then X
-> X             compare if greater then X
++ X              adds a number or variable to current expression
+- X              subtracts a number or variable to current expression
+* X              multiply a number or variable to current expression
+/ X              divide a number or variable to current expression
+% X              calculate modulo of current expression by number
+>> X             send the value of the current expression to a variable
+== X             compare if equal X
+!= X             compare if diferent then X
+< X              compare if less then X
+> X              compare if greater then X
+lda X            loads value in the position 1, imedatly right of base 0 and current expression, use with hardcode
 
-set X           set value at vector X to last X value, uses current expression as position
-get X           get value of vector X to operate at base, uses current expression as position
+hardcode <bf>    appends pure bf code into the output, can be used with lda and macro to create custom operations, example: 5 lda 8 hardcode >[-<+>]<, this sums up 5 and 8 and put the result in the current expression, you can put this hardcode on macro sum hardcode >[-<+>]< endmacro, then write the line like 5 lda 8 sum
 
-macro X         create a macro, can be used like a function
-endmacro        close a macro
+set X            set value at vector X to last X value, uses current expression as position
+get X            get value of vector X to operate at base, uses current expression as position
+
+struct X         opens a struct with the name X, every token after is a variable in the struct until the end of the struct, example struct point X Y endstruct
+
+endstruct        closes a struct
+
+macro X          create a macro with the name X, can be used like a function, every token after is the macro code until the end of the macro
+endmacro         close a macro
 ```
