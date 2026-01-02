@@ -18,14 +18,8 @@ bool EhNumero(string val)
 
 int Var(int idx)
 {
-	return idx*4 + 32;
+	return idx*4 + 16;
 }
-
-typedef struct
-{
-	string name;
-	vector<string> cd;
-}macro;
 
 void CompileError(string msg)
 {
@@ -41,7 +35,6 @@ class custwo
 {
 	private:
 		vector<string> code;
-		vector<macro> macros;
 		string bfcode;
 		
 	public:
@@ -61,18 +54,13 @@ void custwo::ReadCodeFromFile(string filename)
 void custwo::Compile()
 {
 	//variaveis de execução
+	bfcode = "";
 	vector<string> vars;
 	string token = "";
 	int pc = 0;
 	string optype = "load";
 	string out = "";
 	string dupe = "[->+>+<<]>>[-<<+>>]<";
-	
-	for(int i=0 ; i<8 ; i++)
-	{
-		string varname = "x" + to_string(i);
-		vars.push_back(varname);
-	}
 	
 	//E LA VAMOS NÓS x4
 	while(pc < code.size())
@@ -91,7 +79,7 @@ void custwo::Compile()
 		}
 		
 		// vec
-		if(token == "vec")
+		else if(token == "vec")
 		{
 			pc += 1;
 			token = code[pc];
@@ -106,7 +94,7 @@ void custwo::Compile()
 		}
 		
 		// import
-		if(token == "import")
+		else if(token == "import")
 		{
 			pc += 1; token = code[pc];
 			ReadCodeFromFile(token);
@@ -161,7 +149,7 @@ void custwo::Compile()
 		}
 		else if(token == ".")
 		{
-			bfcode += ">>++++++++++<<[->+>-[>+>>]>[+[-<+>]>+>>]<<<<<<]>>[-]>>>++++++++++<[->-[>+>>]>[+[-<+>]>+>>]<<<<<]>[-]>>[>++++++[-<++++++++>]<.<<+>+>[-]]<[<[->-<]++++++[->++++++++ <]>.[-]]<<++++++[-<++++++++>]<.[-]<<[-<+>]<";
+			bfcode += ">>++++++++++<<[->+>-[>+>>]>[+[-<+>]>+>>]<<<<<<]>>[-]>>>++++++++++<[->-[>+>>]>[+[-<+>]>+>>]<<<<<]>[-]>>[>++++++[-<++++++++>]<.<<+>+>[-]]<[<[->-<]++++++[->++++++++<]>.[-]]<<++++++[-<++++++++>]<.[-]<<[-<+>]<";
 		}
 		else if(token == "..")
 		{
@@ -187,7 +175,7 @@ void custwo::Compile()
 		}
 		
 		// set ops
-		else if(token == "+" || token == "-" || token == "*" || token == "/" || token == ">>" || token == "!=" || token == "==" || token == "<" || token == ">" || token == "%" || token == "lda")
+		else if(token == "+" || token == "-" || token == "*" || token == "/" || token == ">>" || token == "!=" || token == "==" || token == "<" || token == ">" || token == "<=" || token == ">=" || token == "%" || token == "lda" || token == "and" || token == "or")
 		{
 			optype = token;
 		}
@@ -332,7 +320,7 @@ void custwo::Compile()
 				{
 					bfcode += ">[-]";
 					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
-					bfcode += "<>[-<->]<[[-]+>]<";
+					bfcode += "<>[-<->]<[>+<[-]]>[-<+>]<";
 				}
 				if(optype == "==")
 				{
@@ -351,6 +339,18 @@ void custwo::Compile()
 					bfcode += ">[-]";
 					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
 					bfcode += "<>>>[-]>[-]<<[-]<<[>>>+<<[->>[-]>+<<<]>>[-<+>]>[-<<<+>>>]<<<-<-]>[-]>[-<<+>>]<<";
+				}
+				if(optype == ">=")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
+				}
+				if(optype == "<=")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
+					bfcode += "<>>>[-]>[-]<<[-]<<[>>>+<<[->>[-]>+<<<]>>[-<+>]>[-<<<+>>>]<<<-<-]>[-]>[-<<+>>]<<>+<[>[-]<[-]]>[-<+>]<";
 				}
 				if(optype == "*")
 				{
@@ -375,6 +375,18 @@ void custwo::Compile()
 					bfcode += ">[-]";
 					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
 					bfcode += "<";
+				}
+				if(optype == "and")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
+					bfcode += "<>>[-]>[-]<<<[>>>+<<<-]>>>[[-]<<[>>+<+<-]>[<+>-]>[<<<+>>>[-]]][-]<[-]<[-]<";
+				}
+				if(optype == "or")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
+					bfcode += "<>[-<+>]<[>+<[-]]>[-<+>]<";
 				}
 				if(optype == "load"){bfcode += "[-]"; for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}}
 				optype = "load";
@@ -390,7 +402,7 @@ void custwo::Compile()
 				{
 					bfcode += ">[-]";
 					for(int i=0 ; i<val ; i++){bfcode += "+";}
-					bfcode += "<>[-<->]<[[-]+>]<";
+					bfcode += "<>[-<->]<[>+<[-]]>[-<+>]<";
 				}
 				if(optype == "==")
 				{
@@ -409,6 +421,18 @@ void custwo::Compile()
 					bfcode += ">[-]";
 					for(int i=0 ; i<val ; i++){bfcode += "+";}
 					bfcode += "<>>>[-]>[-]<<[-]<<[>>>+<<[->>[-]>+<<<]>>[-<+>]>[-<<<+>>>]<<<-<-]>[-]>[-<<+>>]<<";
+				}
+				if(optype == ">=")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<val ; i++){bfcode += "+";}
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
+				}
+				if(optype == "<=")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<val ; i++){bfcode += "+";}
+					bfcode += "<>>>[-]>[-]<<[-]<<[>>>+<<[->>[-]>+<<<]>>[-<+>]>[-<<<+>>>]<<<-<-]>[-]>[-<<+>>]<<>+<[>[-]<[-]]>[-<+>]<";
 				}
 				if(optype == "*")
 				{
@@ -433,6 +457,18 @@ void custwo::Compile()
 					bfcode += ">[-]";
 					for(int i=0 ; i<val ; i++){bfcode += "+";}
 					bfcode += "<";
+				}
+				if(optype == "and")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<val ; i++){bfcode += "+";}
+					bfcode += "<>>[-]>[-]<<<[>>>+<<<-]>>>[[-]<<[>>+<+<-]>[<+>-]>[<<<+>>>[-]]][-]<[-]<[-]<";
+				}
+				if(optype == "or")
+				{
+					bfcode += ">[-]";
+					for(int i=0 ; i<val ; i++){bfcode += "+";}
+					bfcode += "<>[-<+>]<[>+<[-]]>[-<+>]<";
 				}
 				if(optype == "load"){bfcode += "[-]"; for(int i=0 ; i<val ; i++){bfcode += "+";}}
 				optype = "load";
@@ -497,7 +533,7 @@ void custwo::Compile()
 					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
 					bfcode += "]";
 					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
-					bfcode += "<>[-<->]<[[-]+>]<";
+					bfcode += "<>[-<->]<[>+<[-]]>[-<+>]<";
 				}
 				if(optype == "==")
 				{
@@ -534,6 +570,30 @@ void custwo::Compile()
 					bfcode += "]";
 					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
 					bfcode += "<>>>[-]>[-]<<[-]<<[>>>+<<[->>[-]>+<<<]>>[-<+>]>[-<<<+>>>]<<<-<-]>[-]>[-<<+>>]<<";
+				}
+				if(optype == ">=")
+				{
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += dupe;
+					bfcode += "[-";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "+";
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += "]";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
+				}
+				if(optype == "<=")
+				{
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += dupe;
+					bfcode += "[-";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "+";
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += "]";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "<>>>[-]>[-]<<[-]<<[>>>+<<[->>[-]>+<<<]>>[-<+>]>[-<<<+>>>]<<<-<-]>[-]>[-<<+>>]<<>+<[>[-]<[-]]>[-<+>]<"; 
 				}
 				if(optype == "*")
 				{
@@ -583,6 +643,30 @@ void custwo::Compile()
 					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
 					bfcode += "<";
 				}
+				if(optype == "and")
+				{
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += dupe;
+					bfcode += "[-";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "+";
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += "]";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "<>>[-]>[-]<<<[>>>+<<<-]>>>[[-]<<[>>+<+<-]>[<+>-]>[<<<+>>>[-]]][-]<[-]<[-]<";
+				}
+				if(optype == "or")
+				{
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += dupe;
+					bfcode += "[-";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "+";
+					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+					bfcode += "]";
+					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+					bfcode += "<>[-<+>]<[>+<[-]]>[-<+>]<";
+				}
 				optype = "load";
 			}
 			
@@ -615,7 +699,7 @@ void custwo::Compile()
 					macrostart += 1;
 					if(macrostart >= code.size())
 					{
-						string errormsg = "ERROR: command or macro \"";
+						string errormsg = "ERROR: command, macro or struct \"";
 						errormsg += token;
 						errormsg += "\" does not exist!";
 						CompileError(errormsg);
