@@ -1,5 +1,7 @@
-# SCbf: Static Convert brain f*ck
-This is the implementation of a compiler that converts a custom language into bf, allowing the development of complex bf codes without the bf trouble
+# SCbf: Static Convert brainf*ck
+This is the implementation of a compiler that converts a custom language into BF, allowing the development of complex BF programs without the usual difficulties of writing BF directly.
+
+The motivation for this project is the ease with which BF can be interpreted and compiled almost anywhere, from languages like C and Python to any Turing-complete system, such as Minecraft Redstone. This makes the language suitable for programming virtually anything on any system that can run BF in some form.
 
 # Usage
 All the code is contained within `scbf.cpp`, and can be compiled like:
