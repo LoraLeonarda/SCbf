@@ -1,12 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <stack>
 using namespace std;
 
 // funções úteis e ademais ahaha
 bool EhNumero(string val)
 {
-	if(val.at(0) == '0' || val.at(0) == '1' || val.at(0) == '2' || val.at(0) == '3' || val.at(0) == '4' || val.at(0) == '5' || val.at(0) == '6' || val.at(0) == '7' || val.at(0) == '8' || val.at(0) == '9')
+	if(val.at(0) >= '0' && val.at(0) <= '9')
 	{
 		return true;
 	}
@@ -29,7 +30,7 @@ void CompileError(string msg)
 
 
 //------------------------------------
-// CLASSE DO COMPILADOR DA CUS2
+// CLASSE DO COMPILADOR DA SCBF
 //------------------------------------
 class custwo
 {
@@ -61,6 +62,8 @@ void custwo::Compile()
 	string optype = "load";
 	string out = "";
 	string dupe = "[->+>+<<]>>[-<<+>>]<";
+	stack<int> escopos;
+	int escopo = 0;
 	
 	//E LA VAMOS NÓS x4
 	while(pc < code.size())
@@ -75,7 +78,9 @@ void custwo::Compile()
 		if(token == "var")
 		{
 			pc += 1; token = code[pc];
+			
 			vars.push_back(token);
+			escopo += 1;
 		}
 		
 		// vec
@@ -83,13 +88,18 @@ void custwo::Compile()
 		{
 			pc += 1;
 			token = code[pc];
+			
 			vars.push_back(token);
 			pc += 1;
 			int vecsize = stoi(code[pc]);
 			
 			for(int i=0 ; i<vecsize ; i++)
 			{
-				vars.push_back(token);
+				string varname = token;
+				varname += ":";
+				varname += to_string(i);
+				vars.push_back(varname);
+				escopo += 1;
 			}
 		}
 		
@@ -104,21 +114,37 @@ void custwo::Compile()
 		else if(token == "{")
 		{
 			bfcode += "[";
+			escopos.push(escopo);
+			escopo = 0;
 		}
 		else if(token == "}")
 		{
 			bfcode += "]";
+			for(int i=0 ; i<escopo ; i++)
+			{
+				vars.pop_back();
+			}
+			escopo = escopos.top();
+			escopos.pop();
 		}
 		else if(token == "f}")
 		{
 			bfcode += "[-]]";
+			for(int i=0 ; i<escopo ; i++)
+			{
+				vars.pop_back();
+			}
+			escopo = escopos.top();
+			escopos.pop();
 		}
 		else if(token == "t{")
 		{
 			bfcode += "[-]+[";
+			escopos.push(escopo);
+			escopo = 0;
 		}
 		
-		// true e falsee flip
+		// true e false e flip
 		else if(token == "true")
 		{
 			bfcode += "[-]+";
@@ -217,7 +243,7 @@ void custwo::Compile()
 			// definir posição base da variavel
 			pc += 1; token = code[pc];
 			int varindex = 0;
-			for(int i=0 ; i<vars.size() ; i++)
+			for(int i=vars.size()-1 ; i>=0 ; i--)
 			{
 				string vrn = vars[i];
 				if(token == vrn){varindex = i;break;}
@@ -254,7 +280,7 @@ void custwo::Compile()
 			// definir posição base da variavel
 			pc += 1; token = code[pc];
 			int varindex = 0;
-			for(int i=0 ; i<vars.size() ; i++)
+			for(int i=vars.size()-1 ; i>=0 ; i--)
 			{
 				string vrn = vars[i];
 				if(token == vrn){varindex = i;break;}
@@ -285,12 +311,31 @@ void custwo::Compile()
 			
 		}
 		
+		// -> (limbo)
+		else if(token == "->")
+		{
+			int varindex = Var(vars.size());
+			bfcode += dupe;
+			bfcode += "[";
+			for(int i=0 ; i<varindex ; i++){bfcode += ">";}
+			bfcode += "+";
+			for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+			bfcode += "-]";
+			
+			
+			for(int i=0 ; i<varindex-1 ; i++){bfcode += ">";}
+			bfcode += "[>[->>>>+<<<<]+>>>]>[-<+>]+[-<<<<]>>>";
+			
+			
+			for(int i=0 ; i<varindex ; i++){bfcode += "<";}
+		}
+		
 		// E EH AGORA EM QUE TUDO EXPLODE
 		else
 		{
 			bool ehvar = false;
 			int varindex = 0;
-			for(int i=0 ; i<vars.size() ; i++)
+			for(int i=vars.size()-1 ; i>=0 ; i--)
 			{
 				string vrn = vars[i];
 				if(token == vrn){ehvar = true;varindex = i;break;}
@@ -332,7 +377,7 @@ void custwo::Compile()
 				{
 					bfcode += ">[-]";
 					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
-					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<";
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+<<-]>>[-]<[-]<[-]<[-]<";
 				}
 				if(optype == ">")
 				{
@@ -344,7 +389,7 @@ void custwo::Compile()
 				{
 					bfcode += ">[-]";
 					for(int i=0 ; i<stoi(token) ; i++){bfcode += "+";}
-					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+<<-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
 				}
 				if(optype == "<=")
 				{
@@ -414,7 +459,7 @@ void custwo::Compile()
 				{
 					bfcode += ">[-]";
 					for(int i=0 ; i<val ; i++){bfcode += "+";}
-					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<";
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+<<-]>>[-]<[-]<[-]<[-]<";
 				}
 				if(optype == ">")
 				{
@@ -426,7 +471,7 @@ void custwo::Compile()
 				{
 					bfcode += ">[-]";
 					for(int i=0 ; i<val ; i++){bfcode += "+";}
-					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+<<-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
 				}
 				if(optype == "<=")
 				{
@@ -557,7 +602,7 @@ void custwo::Compile()
 					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
 					bfcode += "]";
 					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
-					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<";
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+<<-]>>[-]<[-]<[-]<[-]<";
 				}
 				if(optype == ">")
 				{
@@ -581,7 +626,7 @@ void custwo::Compile()
 					for(int i=0 ; i<varindex ; i++){bfcode += ">";}
 					bfcode += "]";
 					for(int i=0 ; i<varindex ; i++){bfcode += "<";}
-					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+< <-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
+					bfcode += "<>>[-]>[-]>[-]+>[-]<<<<[>+>+<<-]>[<+>-]<<[>>+<<-]+>>>[>-]>[<<<<->>[-]>>->]<+<<[>-[>-]>[<<<<->>[-]+>>->]<+<<-]>>[-]<[-]<[-]<[-]<>+<[>[-]<[-]]>[-<+>]<";
 				}
 				if(optype == "<=")
 				{
@@ -675,6 +720,7 @@ void custwo::Compile()
 			{
 				pc += 1;
 				token = code[pc];
+				
 				vars.push_back(token);
 				
 				structindex += 1;
@@ -731,7 +777,7 @@ void custwo::Compile()
 void custwo::RunBf()
 {
 	// variaveis de execução
-	char mem[4096] = {};
+	char mem[32000] = {};
 	char op;
 	int pc = 0;
 	int mc = 0;
